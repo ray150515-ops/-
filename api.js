@@ -1,4 +1,4 @@
-// Minecraft社区 - Cloudflare Worker API
+// 简单可用的Minecraft社区API
 export default {
   async fetch(request, env) {
     const url = new URL(request.url);
@@ -7,8 +7,8 @@ export default {
     // CORS头
     const headers = {
       'Access-Control-Allow-Origin': '*',
-      'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
-      'Access-Control-Allow-Headers': 'Content-Type, Authorization',
+      'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
+      'Access-Control-Allow-Headers': 'Content-Type',
       'Content-Type': 'application/json'
     };
     
@@ -18,28 +18,39 @@ export default {
     }
     
     try {
-      // API路由
+      // 帖子API
       if (path === '/api/posts') {
         if (request.method === 'GET') {
           // 获取帖子列表
-          const posts = await env.MINECRAFT_KV.get('posts', 'json') || [];
+          const posts = await env.KV.get('posts', 'json') || [];
           return new Response(JSON.stringify(posts), { headers });
         }
         
         if (request.method === 'POST') {
           // 创建新帖子
           const data = await request.json();
-          const posts = await env.MINECRAFT_KV.get('posts', 'json') || [];
+          
+          // 验证数据
+          if (!data.title || !data.content) {
+            return new Response(JSON.stringify({ error: '标题和内容不能为空' }), {
+              status: 400,
+              headers
+            });
+          }
+          
+          const posts = await env.KV.get('posts', 'json') || [];
           
           const newPost = {
             id: Date.now(),
-            ...data,
-            createdAt: new Date().toISOString(),
-            author: data.author || '匿名玩家'
+            title: data.title,
+            content: data.content,
+            platform: data.platform || 'java',
+            author: data.author || '匿名玩家',
+            createdAt: new Date().toISOString()
           };
           
           posts.unshift(newPost);
-          await env.MINECRAFT_KV.put('posts', JSON.stringify(posts));
+          await env.KV.put('posts', JSON.stringify(posts));
           
           return new Response(JSON.stringify(newPost), { 
             status: 201,
@@ -48,27 +59,37 @@ export default {
         }
       }
       
+      // 服务器API
       if (path === '/api/servers') {
         if (request.method === 'GET') {
-          // 获取服务器列表
-          const servers = await env.MINECRAFT_KV.get('servers', 'json') || [];
+          const servers = await env.KV.get('servers', 'json') || [];
           return new Response(JSON.stringify(servers), { headers });
         }
         
         if (request.method === 'POST') {
-          // 添加新服务器
           const data = await request.json();
-          const servers = await env.MINECRAFT_KV.get('servers', 'json') || [];
+          
+          if (!data.name || !data.ip || !data.description) {
+            return new Response(JSON.stringify({ error: '请填写所有字段' }), {
+              status: 400,
+              headers
+            });
+          }
+          
+          const servers = await env.KV.get('servers', 'json') || [];
           
           const newServer = {
             id: Date.now(),
-            ...data,
-            createdAt: new Date().toISOString(),
-            author: data.author || '匿名'
+            name: data.name,
+            ip: data.ip,
+            description: data.description,
+            platform: data.platform || 'java',
+            author: data.author || '匿名',
+            createdAt: new Date().toISOString()
           };
           
           servers.unshift(newServer);
-          await env.MINECRAFT_KV.put('servers', JSON.stringify(servers));
+          await env.KV.put('servers', JSON.stringify(servers));
           
           return new Response(JSON.stringify(newServer), { 
             status: 201,
@@ -77,78 +98,37 @@ export default {
         }
       }
       
-      if (path === '/api/auth/register' && request.method === 'POST') {
-        // 用户注册
-        const { username, password } = await request.json();
+      // 认证API（简化版）
+      if (path === '/api/auth/login') {
+        const data = await request.json();
         
-        if (!username || !password) {
-          return new Response(JSON.stringify({ 
-            success: false, 
-            message: '用户名和密码不能为空' 
-          }), { headers });
+        // 这里简化了，实际应该验证密码
+        const users = await env.KV.get('users', 'json') || {};
+        
+        if (!users[data.username]) {
+          // 自动创建用户（简化）
+          users[data.username] = {
+            id: Date.now(),
+            username: data.username,
+            createdAt: new Date().toISOString()
+          };
+          await env.KV.put('users', JSON.stringify(users));
         }
         
-        // 获取现有用户
-        const users = await env.MINECRAFT_KV.get('users', 'json') || {};
-        
-        if (users[username]) {
-          return new Response(JSON.stringify({ 
-            success: false, 
-            message: '用户名已存在' 
-          }), { headers });
-        }
-        
-        // 创建用户（实际应该加密密码）
-        users[username] = {
-          id: Date.now(),
-          username,
-          password, // 警告：实际应用中应该使用bcrypt加密
-          createdAt: new Date().toISOString()
-        };
-        
-        await env.MINECRAFT_KV.put('users', JSON.stringify(users));
-        
-        return new Response(JSON.stringify({ 
-          success: true, 
-          message: '注册成功' 
-        }), { headers });
-      }
-      
-      if (path === '/api/auth/login' && request.method === 'POST') {
-        // 用户登录
-        const { username, password } = await request.json();
-        const users = await env.MINECRAFT_KV.get('users', 'json') || {};
-        const user = users[username];
-        
-        if (!user || user.password !== password) {
-          return new Response(JSON.stringify({ 
-            success: false, 
-            message: '用户名或密码错误' 
-          }), { headers });
-        }
-        
-        // 创建简单的token（实际应该用JWT）
-        const token = btoa(JSON.stringify({
-          userId: user.id,
-          username: user.username,
-          exp: Date.now() + 7 * 24 * 60 * 60 * 1000 // 7天过期
-        }));
-        
-        return new Response(JSON.stringify({ 
+        return new Response(JSON.stringify({
           success: true,
-          token,
           user: {
-            id: user.id,
-            username: user.username
+            username: data.username,
+            id: users[data.username]?.id || Date.now()
           }
         }), { headers });
       }
       
-      if (path === '/api/stats' && request.method === 'GET') {
-        // 获取统计数据
-        const posts = await env.MINECRAFT_KV.get('posts', 'json') || [];
-        const servers = await env.MINECRAFT_KV.get('servers', 'json') || [];
-        const users = await env.MINECRAFT_KV.get('users', 'json') || {};
+      // 统计数据
+      if (path === '/api/stats') {
+        const posts = await env.KV.get('posts', 'json') || [];
+        const servers = await env.KV.get('servers', 'json') || [];
+        const users = await env.KV.get('users', 'json') || {};
         
         return new Response(JSON.stringify({
           posts: posts.length,
@@ -166,7 +146,7 @@ export default {
     } catch (error) {
       console.error('API Error:', error);
       return new Response(JSON.stringify({ 
-        error: 'Server error', 
+        error: 'Server error',
         message: error.message 
       }), {
         status: 500,
