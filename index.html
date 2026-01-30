@@ -3,17 +3,14 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>🎮 Minecraft永久社区 | 您的数据库已就绪</title>
+    <title>🎮 Minecraft社区 | 您的GitHub Gist版</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
         :root {
             --mc-green: #3b8526;
             --mc-dark: #1a2c1a;
-            --mc-light: #2d4a2d;
-            --java-red: #e74c3c;
-            --bedrock-blue: #3498db;
-            --supabase-green: #3ecf8e;
+            --github-black: #24292e;
+            --github-green: #2ea043;
         }
         
         * { margin:0; padding:0; box-sizing:border-box; font-family:'Segoe UI',sans-serif; }
@@ -21,69 +18,96 @@
             background: linear-gradient(135deg, #0f1a0f 0%, #1a2c1a 100%);
             color:white; 
             min-height:100vh;
+            padding:20px;
         }
         
-        .container { max-width:1200px; margin:0 auto; padding:20px; }
+        .container { max-width:1000px; margin:0 auto; }
         
-        /* 成功头部 */
-        .success-header {
-            background: linear-gradient(135deg, #1a2c1a, #2d4a2d);
-            padding: 40px;
-            border-radius: 20px;
+        /* 头部 */
+        .header {
+            background: linear-gradient(135deg, var(--github-black), #2d333b);
+            padding: 30px;
+            border-radius: 15px;
             margin-bottom: 30px;
             text-align: center;
             border: 3px solid var(--mc-green);
-            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
         }
         
-        .success-icon {
-            font-size: 4rem;
-            color: var(--supabase-green);
-            margin-bottom: 20px;
-            animation: bounce 2s infinite;
-        }
-        
-        @keyframes bounce {
-            0%, 100% { transform: translateY(0); }
-            50% { transform: translateY(-10px); }
-        }
-        
-        .success-header h1 {
+        .header h1 {
             font-size: 2.5rem;
-            background: linear-gradient(45deg, #3b8526, #3ecf8e);
+            background: linear-gradient(45deg, #3b8526, var(--github-green));
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
             margin-bottom: 10px;
         }
         
-        .db-info {
-            background: rgba(62, 207, 142, 0.1);
-            border: 1px solid var(--supabase-green);
+        .gist-info {
+            background: rgba(36,41,46,0.3);
+            border: 1px solid #444;
             border-radius: 10px;
             padding: 15px;
             margin: 20px 0;
             font-family: monospace;
-            word-break: break-all;
         }
         
-        /* 主要内容 */
-        .main-content {
+        /* 状态指示器 */
+        .status {
+            padding: 12px;
+            border-radius: 8px;
+            margin: 15px 0;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            justify-content: center;
+        }
+        
+        .status.success {
+            background: rgba(46,160,67,0.2);
+            border: 1px solid var(--github-green);
+        }
+        
+        .status.error {
+            background: rgba(248,81,73,0.2);
+            border: 1px solid #f85149;
+        }
+        
+        .status.warning {
+            background: rgba(201,167,0,0.2);
+            border: 1px solid #d29922;
+        }
+        
+        /* 快速操作按钮 */
+        .quick-actions {
             display: grid;
-            grid-template-columns: 1fr 350px;
-            gap: 30px;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin: 20px 0;
         }
         
-        @media (max-width: 900px) {
-            .main-content { grid-template-columns: 1fr; }
+        .action-btn {
+            background: var(--github-black);
+            border: 1px solid #444;
+            color: white;
+            padding: 15px;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: 0.3s;
+            text-align: center;
         }
         
-        /* 发布表单 */
-        .publish-box {
-            background: rgba(26, 44, 26, 0.8);
-            padding: 30px;
+        .action-btn:hover {
+            background: #2d333b;
+            border-color: #666;
+            transform: translateY(-2px);
+        }
+        
+        /* 内容区 */
+        .content-area {
+            background: rgba(26,44,26,0.8);
             border-radius: 15px;
+            padding: 30px;
+            margin: 30px 0;
             border: 2px solid var(--mc-green);
-            margin-bottom: 30px;
         }
         
         .form-group { margin-bottom: 20px; }
@@ -95,18 +119,10 @@
             border-radius: 10px;
             color: white;
             font-size: 1rem;
-            transition: 0.3s;
         }
         
-        .form-control:focus {
-            outline: none;
-            border-color: var(--mc-green);
-            box-shadow: 0 0 0 3px rgba(59,133,38,0.3);
-        }
+        textarea.form-control { min-height: 100px; resize: vertical; }
         
-        textarea.form-control { min-height: 120px; resize: vertical; }
-        
-        /* 按钮 */
         .btn {
             padding: 15px 30px;
             background: var(--mc-green);
@@ -117,505 +133,378 @@
             font-size: 1.1rem;
             font-weight: bold;
             transition: 0.3s;
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            gap: 10px;
             width: 100%;
         }
         
         .btn:hover {
             background: #5ba34e;
-            transform: translateY(-3px);
-            box-shadow: 0 10px 20px rgba(59,133,38,0.4);
+            transform: translateY(-2px);
         }
         
-        .btn-supabase {
-            background: var(--supabase-green);
+        .btn-github {
+            background: var(--github-black);
+            border: 1px solid #444;
         }
         
-        .btn-supabase:hover {
-            background: #4cdb9d;
+        .btn-github:hover {
+            background: #2d333b;
         }
         
-        /* 内容展示 */
-        .content-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-            gap: 20px;
+        /* 数据显示 */
+        .data-display {
             margin: 30px 0;
         }
         
-        .content-card {
+        .data-card {
             background: rgba(255,255,255,0.05);
-            border-radius: 12px;
-            padding: 25px;
-            border: 1px solid rgba(255,255,255,0.1);
-            transition: 0.3s;
-        }
-        
-        .content-card:hover {
-            transform: translateY(-5px);
-            border-color: var(--mc-green);
-            box-shadow: 0 15px 30px rgba(0,0,0,0.3);
-        }
-        
-        .card-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 15px;
-            padding-bottom: 15px;
-            border-bottom: 1px solid rgba(255,255,255,0.1);
-        }
-        
-        .badge {
-            padding: 5px 12px;
-            border-radius: 20px;
-            font-size: 0.85rem;
-            font-weight: bold;
-        }
-        
-        .badge-java {
-            background: rgba(231,76,60,0.2);
-            color: var(--java-red);
-            border: 1px solid rgba(231,76,60,0.3);
-        }
-        
-        .badge-bedrock {
-            background: rgba(52,152,219,0.2);
-            color: var(--bedrock-blue);
-            border: 1px solid rgba(52,152,219,0.3);
-        }
-        
-        /* 侧边栏 */
-        .sidebar {
-            background: rgba(26,44,26,0.8);
-            border-radius: 15px;
-            padding: 25px;
-            border: 1px solid rgba(255,255,255,0.1);
-            height: fit-content;
-        }
-        
-        .stats-card {
-            background: rgba(62,207,142,0.1);
-            border: 1px solid var(--supabase-green);
             border-radius: 10px;
             padding: 20px;
-            margin-bottom: 20px;
+            margin: 15px 0;
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+        
+        .loading {
             text-align: center;
+            padding: 40px;
+            color: #888;
         }
         
-        .stats-card h3 {
-            font-size: 2.5rem;
-            color: var(--supabase-green);
-            margin: 10px 0;
-        }
-        
-        /* 实时活动 */
-        .activity-item {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            padding: 12px;
-            background: rgba(255,255,255,0.05);
-            border-radius: 8px;
-            margin-bottom: 10px;
-            font-size: 0.9rem;
-        }
-        
-        /* 加载动画 */
-        .loader {
-            display: flex;
-            justify-content: center;
-            gap: 8px;
-            margin: 30px 0;
-        }
-        
-        .loader div {
-            width: 12px;
-            height: 12px;
-            background: var(--mc-green);
-            border-radius: 50%;
-            animation: pulse 1.4s infinite ease-in-out both;
-        }
-        
-        .loader div:nth-child(1) { animation-delay: -0.32s; }
-        .loader div:nth-child(2) { animation-delay: -0.16s; }
-        
-        @keyframes pulse {
-            0%, 80%, 100% { transform: scale(0); opacity: 0; }
-            40% { transform: scale(1); opacity: 1; }
+        .loading i {
+            font-size: 2rem;
+            margin-bottom: 15px;
+            color: var(--mc-green);
         }
     </style>
 </head>
 <body>
     <div class="container">
-        <!-- 成功头部 -->
-        <div class="success-header">
-            <div class="success-icon">
-                <i class="fas fa-database"></i>
-            </div>
-            <h1>🎮 Minecraft社区已连接！</h1>
-            <p>您的Supabase数据库正在运行，数据永久存储</p>
+        <!-- 头部 -->
+        <div class="header">
+            <h1><i class="fab fa-github"></i> Minecraft GitHub社区</h1>
+            <p>使用您的GitHub Gist存储数据</p>
             
-            <div class="db-info">
-                <div><strong>数据库URL:</strong> isvyleujyxrjxvqrutrm.supabase.co</div>
-                <div><strong>状态:</strong> <span id="dbStatus">连接中...</span></div>
+            <div class="gist-info">
+                <div><strong>Gist ID:</strong> bc0ab1b9249595c0205d98ff95a3181b</div>
+                <div><strong>数据URL:</strong> https://gist.githubusercontent.com/bc0ab1b9249595c0205d98ff95a3181b/raw</div>
             </div>
             
-            <button class="btn btn-supabase" onclick="testConnection()">
-                <i class="fas fa-plug"></i> 测试连接
+            <div class="status" id="connectionStatus">
+                <i class="fas fa-circle"></i>
+                <span>准备连接GitHub...</span>
+            </div>
+        </div>
+        
+        <!-- 快速操作 -->
+        <div class="quick-actions">
+            <div class="action-btn" onclick="loadFromGist()">
+                <i class="fas fa-download"></i>
+                <div>从Gist加载数据</div>
+            </div>
+            
+            <div class="action-btn" onclick="viewGistPage()">
+                <i class="fas fa-external-link-alt"></i>
+                <div>查看Gist页面</div>
+            </div>
+            
+            <div class="action-btn" onclick="showPostForm()">
+                <i class="fas fa-plus"></i>
+                <div>发布新内容</div>
+            </div>
+            
+            <div class="action-btn" onclick="showGitHubConfig()">
+                <i class="fas fa-cog"></i>
+                <div>GitHub配置</div>
+            </div>
+        </div>
+        
+        <!-- 发布表单 -->
+        <div class="content-area" id="postForm" style="display:none;">
+            <h2 style="text-align:center;margin-bottom:25px;">
+                <i class="fas fa-plus-circle"></i> 发布新内容
+            </h2>
+            
+            <div class="form-group">
+                <select id="contentType" class="form-control" onchange="toggleForm()">
+                    <option value="post">发布帖子</option>
+                    <option value="server">添加服务器</option>
+                </select>
+            </div>
+            
+            <div id="postFormContent">
+                <div class="form-group">
+                    <input type="text" id="postTitle" class="form-control" placeholder="帖子标题" value="欢迎来到GitHub社区！">
+                </div>
+                <div class="form-group">
+                    <textarea id="postContent" class="form-control" placeholder="帖子内容...">这是一个使用GitHub Gist存储数据的Minecraft社区！</textarea>
+                </div>
+            </div>
+            
+            <div id="serverFormContent" style="display:none;">
+                <div class="form-group">
+                    <input type="text" id="serverName" class="form-control" placeholder="服务器名称" value="GitHub社区服务器">
+                </div>
+                <div class="form-group">
+                    <input type="text" id="serverIP" class="form-control" placeholder="IP地址:端口" value="play.github-mc.com:25565">
+                </div>
+                <div class="form-group">
+                    <textarea id="serverDesc" class="form-control" placeholder="服务器描述...">欢迎加入我们的GitHub社区服务器！</textarea>
+                </div>
+            </div>
+            
+            <div class="form-group">
+                <label style="display:block;margin-bottom:10px;color:#ccc;">游戏版本：</label>
+                <div style="display:flex;gap:15px;">
+                    <label style="display:flex;align-items:center;gap:8px;cursor:pointer;">
+                        <input type="radio" name="platform" value="java" checked>
+                        <span style="background:#e74c3c20;color:#e74c3c;padding:5px 10px;border-radius:15px;">Java版</span>
+                    </label>
+                    <label style="display:flex;align-items:center;gap:8px;cursor:pointer;">
+                        <input type="radio" name="platform" value="bedrock">
+                        <span style="background:#3498db20;color:#3498db;padding:5px 10px;border-radius:15px;">基岩版</span>
+                    </label>
+                </div>
+            </div>
+            
+            <button class="btn" onclick="saveContent()">
+                <i class="fas fa-save"></i> 保存内容
+            </button>
+            
+            <button class="btn btn-github" onclick="saveToGist()" style="margin-top:10px;">
+                <i class="fab fa-github"></i> 保存到GitHub Gist
             </button>
         </div>
-
-        <div class="main-content">
-            <!-- 左侧主内容 -->
-            <div>
-                <!-- 发布区 -->
-                <div class="publish-box">
-                    <h2 style="margin-bottom:25px;text-align:center;">
-                        <i class="fas fa-plus-circle"></i> 发布新内容
-                    </h2>
-                    
-                    <div class="form-group">
-                        <select id="contentType" class="form-control" onchange="toggleForm()">
-                            <option value="post">发布帖子</option>
-                            <option value="server">添加服务器</option>
-                        </select>
-                    </div>
-
-                    <div id="postForm">
-                        <div class="form-group">
-                            <input type="text" id="postTitle" class="form-control" placeholder="输入帖子标题" value="我的第一个Minecraft帖子">
-                        </div>
-                        <div class="form-group">
-                            <textarea id="postContent" class="form-control" placeholder="详细描述你的内容...">这是一个测试帖子，数据存储在Supabase！</textarea>
-                        </div>
-                    </div>
-
-                    <div id="serverForm" style="display:none;">
-                        <div class="form-group">
-                            <input type="text" id="serverName" class="form-control" placeholder="服务器名称" value="我的Minecraft服务器">
-                        </div>
-                        <div class="form-group">
-                            <input type="text" id="serverIP" class="form-control" placeholder="IP地址:端口" value="play.myserver.com:25565">
-                        </div>
-                        <div class="form-group">
-                            <textarea id="serverDesc" class="form-control" placeholder="服务器描述...">欢迎加入我们的生存服务器！</textarea>
-                        </div>
-                    </div>
-
-                    <div class="form-group">
-                        <label style="display:block;margin-bottom:10px;color:#ccc;">游戏版本：</label>
-                        <div style="display:flex;gap:15px;">
-                            <label style="display:flex;align-items:center;gap:8px;cursor:pointer;">
-                                <input type="radio" name="platform" value="java" checked>
-                                <span class="badge badge-java">Java版</span>
-                            </label>
-                            <label style="display:flex;align-items:center;gap:8px;cursor:pointer;">
-                                <input type="radio" name="platform" value="bedrock">
-                                <span class="badge badge-bedrock">基岩版</span>
-                            </label>
-                        </div>
-                    </div>
-
-                    <button class="btn" onclick="submitContent()">
-                        <i class="fas fa-cloud-upload-alt"></i> 发布到数据库
-                    </button>
-                </div>
-
-                <!-- 帖子列表 -->
-                <div>
-                    <h2 style="margin-bottom:20px;">
-                        <i class="fas fa-comments"></i> 最新帖子
-                        <button class="btn" onclick="loadPosts()" style="width:auto;padding:10px 20px;float:right;">
-                            <i class="fas fa-sync-alt"></i> 刷新
-                        </button>
-                    </h2>
-                    
-                    <div id="postsLoading" class="loader"></div>
-                    <div class="content-grid" id="postsGrid">
-                        <!-- 动态加载 -->
-                    </div>
-                </div>
-                
-                <!-- 服务器列表 -->
-                <div style="margin-top:40px;">
-                    <h2 style="margin-bottom:20px;">
-                        <i class="fas fa-server"></i> 服务器列表
-                        <button class="btn" onclick="loadServers()" style="width:auto;padding:10px 20px;float:right;">
-                            <i class="fas fa-sync-alt"></i> 刷新
-                        </button>
-                    </h2>
-                    
-                    <div id="serversLoading" class="loader"></div>
-                    <div class="content-grid" id="serversGrid">
-                        <!-- 动态加载 -->
-                    </div>
-                </div>
-            </div>
-
-            <!-- 右侧侧边栏 -->
-            <div class="sidebar">
-                <h3><i class="fas fa-chart-bar"></i> 实时统计</h3>
-                
-                <div class="stats-card">
-                    <i class="fas fa-database" style="font-size:2rem;color:var(--supabase-green);"></i>
-                    <h3 id="postsCount">0</h3>
-                    <p>总帖子数</p>
-                </div>
-                
-                <div class="stats-card">
-                    <i class="fas fa-server" style="font-size:2rem;color:var(--supabase-green);"></i>
-                    <h3 id="serversCount">0</h3>
-                    <p>服务器数</p>
-                </div>
-                
-                <h3 style="margin-top:30px;"><i class="fas fa-bolt"></i> 实时活动</h3>
-                <div id="activityFeed">
-                    <div class="activity-item">
-                        <i class="fas fa-circle" style="color:var(--supabase-green);font-size:0.6rem;"></i>
-                        <span>系统启动</span>
-                    </div>
-                </div>
-                
-                <h3 style="margin-top:30px;"><i class="fas fa-info-circle"></i> 使用说明</h3>
-                <div style="color:#ccc;font-size:0.9rem;line-height:1.5;">
-                    <p>✅ 数据永久存储在Supabase</p>
-                    <p>✅ 所有人实时可见</p>
-                    <p>✅ 无需注册登录</p>
-                    <p>✅ 支持Java/基岩版</p>
-                </div>
-                
-                <button class="btn btn-supabase" onclick="openSupabaseConsole()" style="margin-top:20px;">
-                    <i class="fas fa-external-link-alt"></i> 打开数据库管理
+        
+        <!-- 数据显示区 -->
+        <div class="data-display">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;">
+                <h2><i class="fas fa-comments"></i> 帖子列表</h2>
+                <button class="btn" onclick="loadFromGist()" style="width:auto;padding:10px 20px;">
+                    <i class="fas fa-sync-alt"></i> 刷新
                 </button>
+            </div>
+            
+            <div id="postsDisplay" class="loading">
+                <i class="fas fa-spinner fa-spin"></i>
+                <p>点击"从Gist加载数据"开始</p>
+            </div>
+            
+            <h2 style="margin-top:40px;margin-bottom:20px;"><i class="fas fa-server"></i> 服务器列表</h2>
+            <div id="serversDisplay" class="loading">
+                <i class="fas fa-spinner fa-spin"></i>
+                <p>数据加载中...</p>
+            </div>
+        </div>
+        
+        <!-- GitHub配置 -->
+        <div class="content-area" id="githubConfig" style="display:none;">
+            <h2 style="text-align:center;margin-bottom:25px;">
+                <i class="fas fa-cog"></i> GitHub配置
+            </h2>
+            
+            <div class="form-group">
+                <label style="display:block;margin-bottom:5px;color:#ccc;">GitHub Token:</label>
+                <input type="password" id="githubToken" class="form-control" placeholder="输入GitHub Personal Access Token">
+                <small style="color:#888;margin-top:5px;">
+                    需要具有gist权限的token才能自动保存
+                </small>
+            </div>
+            
+            <div class="form-group">
+                <label style="display:block;margin-bottom:5px;color:#ccc;">Gist ID:</label>
+                <input type="text" id="gistId" class="form-control" value="bc0ab1b9249595c0205d98ff95a3181b" readonly>
+            </div>
+            
+            <button class="btn" onclick="saveGitHubConfig()">
+                <i class="fas fa-check"></i> 保存配置
+            </button>
+            
+            <div style="margin-top:25px;padding:15px;background:rgba(201,167,0,0.1);border-radius:8px;border:1px solid #d29922;">
+                <h3><i class="fas fa-info-circle"></i> 如何获取GitHub Token:</h3>
+                <ol style="margin-left:20px;color:#ccc;">
+                    <li>访问 https://github.com/settings/tokens</li>
+                    <li>点击"Generate new token"</li>
+                    <li>选择"gist"权限</li>
+                    <li>复制生成的token</li>
+                </ol>
             </div>
         </div>
     </div>
 
     <script>
-        // ============ 您的Supabase配置 ============
-        const SUPABASE_URL = 'https://isvyleujyxrjxvqrutrm.supabase.co';
-        const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImlzdnlsZXVqeXhyanh2cXJ1dHJtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njk3NDYzNTUsImV4cCI6MjA4NTMyMjM1NX0.z_IGzIRjviUWNANVjrz6v1XqMD-j1AR1SxDZr6ACGeI';
+        // ============ 配置 ============
+        const GIST_ID = 'bc0ab1b9249595c0205d98ff95a3181b';
+        const GIST_URL = `https://gist.githubusercontent.com/${GIST_ID}/raw`;
+        const GITHUB_API = 'https://api.github.com';
         
-        console.log('🎯 使用正确的anon key:', SUPABASE_KEY.substring(0, 20) + '...');
+        // 应用数据
+        let appData = {
+            posts: [],
+            servers: [],
+            last_updated: new Date().toISOString(),
+            version: '1.0'
+        };
         
-        // 初始化Supabase
-        const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+        let currentUser = 'GitHub玩家_' + Math.floor(Math.random() * 1000);
+        let githubToken = localStorage.getItem('github_token') || '';
         
-        let currentUser = '玩家_' + Math.floor(Math.random() * 10000);
+        // ============ 初始化 ============
+        function initApp() {
+            // 设置Gist ID
+            document.getElementById('gistId').value = GIST_ID;
+            
+            // 如果有token，设置token输入框
+            if (githubToken) {
+                document.getElementById('githubToken').value = githubToken;
+            }
+            
+            // 更新状态
+            updateConnectionStatus();
+            
+            // 显示用户信息
+            const statusEl = document.getElementById('connectionStatus');
+            statusEl.innerHTML += `<div style="margin-top:10px;color:#ccc;">当前用户: ${currentUser}</div>`;
+            
+            // 尝试加载本地数据
+            loadLocalData();
+        }
         
-        // ============ 数据库连接测试 ============
-        async function testConnection() {
-            const statusEl = document.getElementById('dbStatus');
-            statusEl.innerHTML = '测试中...';
-            statusEl.style.color = '#3498db';
+        // ============ Gist操作 ============
+        async function loadFromGist() {
+            const statusEl = document.getElementById('connectionStatus');
+            const postsDisplay = document.getElementById('postsDisplay');
+            const serversDisplay = document.getElementById('serversDisplay');
+            
+            statusEl.className = 'status warning';
+            statusEl.innerHTML = '<i class="fas fa-sync fa-spin"></i><span>正在从GitHub Gist加载数据...</span>';
+            
+            postsDisplay.innerHTML = '<div class="loading"><i class="fas fa-spinner fa-spin"></i><p>加载中...</p></div>';
+            serversDisplay.innerHTML = '<div class="loading"><i class="fas fa-spinner fa-spin"></i><p>加载中...</p></div>';
             
             try {
-                // 测试查询
-                const { data, error } = await supabase
-                    .from('posts')
-                    .select('count', { count: 'exact', head: true });
+                console.log('正在从Gist加载:', GIST_URL);
                 
-                if (error) {
-                    // 如果表不存在，尝试创建
-                    if (error.code === '42P01') {
-                        statusEl.innerHTML = '表不存在，正在检查...';
-                        await createTables();
-                        return;
-                    }
-                    throw error;
+                // 添加随机参数避免缓存
+                const response = await fetch(`${GIST_URL}?t=${Date.now()}`);
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
                 }
                 
-                statusEl.innerHTML = '✅ 连接成功！';
-                statusEl.style.color = '#3ecf8e';
+                const data = await response.json();
                 
-                // 显示成功消息
-                showActivity('数据库连接成功', 'success');
-                loadStats();
+                // 更新应用数据
+                appData = {
+                    ...data,
+                    posts: data.posts || [],
+                    servers: data.servers || []
+                };
+                
+                // 保存到本地
+                saveLocalData();
+                
+                // 更新显示
+                displayPosts();
+                displayServers();
+                
+                statusEl.className = 'status success';
+                statusEl.innerHTML = `<i class="fas fa-check-circle"></i><span>成功加载 ${appData.posts.length} 条帖子和 ${appData.servers.length} 个服务器</span>`;
+                
+                alert(`✅ 从GitHub Gist加载成功！\n\n帖子: ${appData.posts.length} 条\n服务器: ${appData.servers.length} 个`);
                 
             } catch (error) {
-                console.error('连接失败:', error);
-                statusEl.innerHTML = '❌ 连接失败: ' + error.message;
-                statusEl.style.color = '#e74c3c';
-                showActivity('连接失败: ' + error.message, 'error');
+                console.error('从Gist加载失败:', error);
+                
+                statusEl.className = 'status error';
+                statusEl.innerHTML = `<i class="fas fa-times-circle"></i><span>加载失败: ${error.message}</span>`;
+                
+                // 使用本地数据
+                postsDisplay.innerHTML = '<div class="loading"><i class="fas fa-exclamation-triangle"></i><p>使用本地数据</p></div>';
+                loadLocalData();
+                displayPosts();
+                displayServers();
+                
+                alert(`⚠️ 从GitHub加载失败，使用本地数据\n\n错误: ${error.message}`);
             }
         }
         
-        // ============ 创建表（如果需要） ============
-        async function createTables() {
+        async function saveToGist() {
+            if (!githubToken) {
+                alert('需要GitHub Token才能保存到Gist\n\n请先配置GitHub Token');
+                showGitHubConfig();
+                return;
+            }
+            
+            const statusEl = document.getElementById('connectionStatus');
+            statusEl.className = 'status warning';
+            statusEl.innerHTML = '<i class="fas fa-sync fa-spin"></i><span>正在保存到GitHub Gist...</span>';
+            
             try {
-                // 注意：前端不能直接执行CREATE TABLE
-                // 这里只能提示用户去Supabase控制台执行SQL
-                const statusEl = document.getElementById('dbStatus');
-                statusEl.innerHTML = '请先在Supabase控制台执行SQL创建表';
-                statusEl.style.color = '#f39c12';
+                // 更新数据
+                appData.last_updated = new Date().toISOString();
                 
-                showActivity('需要创建数据库表', 'warning');
+                const response = await fetch(`${GITHUB_API}/gists/${GIST_ID}`, {
+                    method: 'PATCH',
+                    headers: {
+                        'Authorization': `token ${githubToken}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        description: 'Minecraft社区数据库 - 最后更新: ' + new Date().toLocaleString(),
+                        files: {
+                            'minecraft-db.json': {
+                                content: JSON.stringify(appData, null, 2)
+                            }
+                        }
+                    })
+                });
+                
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    throw new Error(errorData.message || `HTTP ${response.status}`);
+                }
+                
+                statusEl.className = 'status success';
+                statusEl.innerHTML = '<i class="fas fa-check-circle"></i><span>成功保存到GitHub Gist！</span>';
+                
+                alert(`✅ 数据已成功保存到您的GitHub Gist！\n\n所有人都能看到更新后的数据。\n\nGist地址: https://gist.github.com/${GIST_ID}`);
                 
             } catch (error) {
-                console.error('创建表失败:', error);
+                console.error('保存到Gist失败:', error);
+                
+                statusEl.className = 'status error';
+                statusEl.innerHTML = `<i class="fas fa-times-circle"></i><span>保存失败: ${error.message}</span>`;
+                
+                alert(`❌ 保存失败:\n${error.message}\n\n数据已保存在本地。`);
             }
         }
         
-        // ============ 页面函数 ============
+        // ============ 本地数据操作 ============
+        function loadLocalData() {
+            const saved = localStorage.getItem('mc_local_data');
+            if (saved) {
+                try {
+                    const data = JSON.parse(saved);
+                    appData.posts = data.posts || [];
+                    appData.servers = data.servers || [];
+                } catch (e) {
+                    console.error('解析本地数据失败:', e);
+                }
+            }
+        }
+        
+        function saveLocalData() {
+            localStorage.setItem('mc_local_data', JSON.stringify(appData));
+            console.log('本地数据已保存');
+        }
+        
+        // ============ 内容操作 ============
         function toggleForm() {
             const type = document.getElementById('contentType').value;
-            document.getElementById('postForm').style.display = type === 'post' ? 'block' : 'none';
-            document.getElementById('serverForm').style.display = type === 'server' ? 'block' : 'none';
+            document.getElementById('postFormContent').style.display = type === 'post' ? 'block' : 'none';
+            document.getElementById('serverFormContent').style.display = type === 'server' ? 'block' : 'none';
         }
         
-        function openSupabaseConsole() {
-            window.open('https://supabase.com/dashboard/project/isvyleujyxrjxvqrutrm', '_blank');
-        }
-        
-        // ============ 加载数据 ============
-        async function loadPosts() {
-            const loadingEl = document.getElementById('postsLoading');
-            const gridEl = document.getElementById('postsGrid');
-            
-            loadingEl.style.display = 'flex';
-            gridEl.innerHTML = '';
-            
-            try {
-                const { data, error, count } = await supabase
-                    .from('posts')
-                    .select('*', { count: 'exact' })
-                    .order('created_at', { ascending: false })
-                    .limit(20);
-                
-                if (error) throw error;
-                
-                // 更新统计
-                document.getElementById('postsCount').textContent = count || 0;
-                
-                if (!data || data.length === 0) {
-                    gridEl.innerHTML = `
-                        <div class="content-card" style="grid-column:1/-1;text-align:center;padding:50px;">
-                            <i class="fas fa-inbox" style="font-size:3rem;color:#666;margin-bottom:20px;"></i>
-                            <h3>还没有帖子</h3>
-                            <p style="color:#888;margin-top:10px;">发布第一个帖子吧！</p>
-                        </div>
-                    `;
-                    return;
-                }
-                
-                gridEl.innerHTML = data.map(post => `
-                    <div class="content-card">
-                        <div class="card-header">
-                            <div style="font-weight:bold;color:#3ecf8e;">${post.author || '玩家'}</div>
-                            <span class="badge ${post.platform === 'java' ? 'badge-java' : 'badge-bedrock'}">
-                                ${post.platform === 'java' ? 'Java版' : '基岩版'}
-                            </span>
-                        </div>
-                        <h3 style="margin-bottom:10px;">${post.title}</h3>
-                        <p style="color:#ccc;line-height:1.6;">${post.content}</p>
-                        <div style="margin-top:15px;padding-top:15px;border-top:1px solid rgba(255,255,255,0.1);">
-                            <div style="display:flex;justify-content:space-between;color:#888;font-size:0.9rem;">
-                                <span>${formatDate(post.created_at)}</span>
-                                <span>#${post.id}</span>
-                            </div>
-                        </div>
-                    </div>
-                `).join('');
-                
-                showActivity(`加载了 ${data.length} 条帖子`, 'success');
-                
-            } catch (error) {
-                gridEl.innerHTML = `
-                    <div class="content-card" style="grid-column:1/-1;background:rgba(231,76,60,0.1);border-color:#e74c3c;">
-                        <h3 style="color:#e74c3c;">加载失败</h3>
-                        <p style="color:#ff9999;">${error.message}</p>
-                        <button class="btn" onclick="loadPosts()" style="margin-top:15px;background:#e74c3c;">
-                            <i class="fas fa-redo"></i> 重试
-                        </button>
-                    </div>
-                `;
-                showActivity('加载帖子失败: ' + error.message, 'error');
-                console.error('加载帖子失败:', error);
-            } finally {
-                loadingEl.style.display = 'none';
-            }
-        }
-        
-        async function loadServers() {
-            const loadingEl = document.getElementById('serversLoading');
-            const gridEl = document.getElementById('serversGrid');
-            
-            loadingEl.style.display = 'flex';
-            gridEl.innerHTML = '';
-            
-            try {
-                const { data, error, count } = await supabase
-                    .from('servers')
-                    .select('*', { count: 'exact' })
-                    .order('created_at', { ascending: false })
-                    .limit(20);
-                
-                if (error) throw error;
-                
-                // 更新统计
-                document.getElementById('serversCount').textContent = count || 0;
-                
-                if (!data || data.length === 0) {
-                    gridEl.innerHTML = `
-                        <div class="content-card" style="grid-column:1/-1;text-align:center;padding:50px;">
-                            <i class="fas fa-server" style="font-size:3rem;color:#666;margin-bottom:20px;"></i>
-                            <h3>还没有服务器</h3>
-                            <p style="color:#888;margin-top:10px;">添加第一个服务器吧！</p>
-                        </div>
-                    `;
-                    return;
-                }
-                
-                gridEl.innerHTML = data.map(server => `
-                    <div class="content-card">
-                        <div class="card-header">
-                            <h3 style="margin:0;">${server.name}</h3>
-                            <span class="badge ${server.platform === 'java' ? 'badge-java' : 'badge-bedrock'}">
-                                ${server.platform === 'java' ? 'Java版' : '基岩版'}
-                            </span>
-                        </div>
-                        
-                        <div style="background:rgba(0,0,0,0.3);padding:12px;border-radius:8px;margin:15px 0;font-family:monospace;word-break:break-all;">
-                            <i class="fas fa-network-wired"></i> ${server.ip}
-                        </div>
-                        
-                        <p style="color:#ccc;line-height:1.6;">${server.description}</p>
-                        
-                        <div style="margin-top:15px;padding-top:15px;border-top:1px solid rgba(255,255,255,0.1);">
-                            <div style="display:flex;justify-content:space-between;align-items:center;">
-                                <span style="color:#888;font-size:0.9rem;">
-                                    <i class="fas fa-user"></i> ${server.author}
-                                </span>
-                                <button class="btn" onclick="copyIP('${server.ip}')" style="width:auto;padding:8px 15px;background:#3498db;">
-                                    <i class="fas fa-copy"></i> 复制IP
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-                `).join('');
-                
-                showActivity(`加载了 ${data.length} 个服务器`, 'success');
-                
-            } catch (error) {
-                gridEl.innerHTML = `
-                    <div class="content-card" style="grid-column:1/-1;background:rgba(231,76,60,0.1);border-color:#e74c3c;">
-                        <h3 style="color:#e74c3c;">加载失败</h3>
-                        <p style="color:#ff9999;">${error.message}</p>
-                    </div>
-                `;
-                showActivity('加载服务器失败: ' + error.message, 'error');
-                console.error('加载服务器失败:', error);
-            } finally {
-                loadingEl.style.display = 'none';
-            }
-        }
-        
-        // ============ 发布内容 ============
-        async function submitContent() {
+        function saveContent() {
             const type = document.getElementById('contentType').value;
             const platform = document.querySelector('input[name="platform"]:checked').value;
             
@@ -628,38 +517,24 @@
                     return;
                 }
                 
-                try {
-                    const { error } = await supabase
-                        .from('posts')
-                        .insert({
-                            id: Date.now(),
-                            title: title,
-                            content: content,
-                            platform: platform,
-                            author: currentUser,
-                            created_at: new Date().toISOString()
-                        });
-                    
-                    if (error) throw error;
-                    
-                    // 成功提示
-                    alert(`✅ 帖子发布成功！\n\n标题: ${title}\n作者: ${currentUser}\n\n数据已永久存储在您的Supabase数据库中！`);
-                    
-                    // 清空表单
-                    document.getElementById('postTitle').value = '';
-                    document.getElementById('postContent').value = '';
-                    
-                    // 重新加载
-                    loadPosts();
-                    loadStats();
-                    
-                    showActivity(`${currentUser} 发布了新帖子: ${title}`, 'success');
-                    
-                } catch (error) {
-                    alert('❌ 发布失败:\n' + error.message);
-                    console.error('发布失败:', error);
-                    showActivity('发布失败: ' + error.message, 'error');
-                }
+                const newPost = {
+                    id: Date.now(),
+                    title: title,
+                    content: content,
+                    platform: platform,
+                    author: currentUser,
+                    created_at: new Date().toISOString()
+                };
+                
+                appData.posts.unshift(newPost);
+                saveLocalData();
+                
+                document.getElementById('postTitle').value = '';
+                document.getElementById('postContent').value = '';
+                
+                displayPosts();
+                
+                alert('✅ 帖子已保存到本地！\n\n点击"保存到GitHub Gist"与其他人分享。');
                 
             } else {
                 const name = document.getElementById('serverName').value.trim();
@@ -671,134 +546,168 @@
                     return;
                 }
                 
-                try {
-                    const { error } = await supabase
-                        .from('servers')
-                        .insert({
-                            id: Date.now(),
-                            name: name,
-                            ip: ip,
-                            description: description,
-                            platform: platform,
-                            author: currentUser,
-                            created_at: new Date().toISOString()
-                        });
-                    
-                    if (error) throw error;
-                    
-                    alert(`✅ 服务器添加成功！\n\n名称: ${name}\nIP: ${ip}\n\n已保存到数据库`);
-                    
-                    // 清空表单
-                    document.getElementById('serverName').value = '';
-                    document.getElementById('serverIP').value = '';
-                    document.getElementById('serverDesc').value = '';
-                    
-                    // 重新加载
-                    loadServers();
-                    loadStats();
-                    
-                    showActivity(`${currentUser} 添加了服务器: ${name}`, 'success');
-                    
-                } catch (error) {
-                    alert('添加失败: ' + error.message);
-                    console.error('添加失败:', error);
-                    showActivity('添加服务器失败: ' + error.message, 'error');
-                }
+                const newServer = {
+                    id: Date.now(),
+                    name: name,
+                    ip: ip,
+                    description: description,
+                    platform: platform,
+                    author: currentUser,
+                    created_at: new Date().toISOString()
+                };
+                
+                appData.servers.unshift(newServer);
+                saveLocalData();
+                
+                document.getElementById('serverName').value = '';
+                document.getElementById('serverIP').value = '';
+                document.getElementById('serverDesc').value = '';
+                
+                displayServers();
+                
+                alert('✅ 服务器已保存到本地！\n\n点击"保存到GitHub Gist"分享。');
             }
+            
+            // 隐藏表单
+            document.getElementById('postForm').style.display = 'none';
         }
         
-        // ============ 统计和活动 ============
-        async function loadStats() {
-            try {
-                // 获取帖子数量
-                const { count: postsCount } = await supabase
-                    .from('posts')
-                    .select('*', { count: 'exact', head: true });
-                
-                // 获取服务器数量
-                const { count: serversCount } = await supabase
-                    .from('servers')
-                    .select('*', { count: 'exact', head: true });
-                
-                document.getElementById('postsCount').textContent = postsCount || 0;
-                document.getElementById('serversCount').textContent = serversCount || 0;
-                
-            } catch (error) {
-                console.error('加载统计失败:', error);
+        // ============ 数据显示 ============
+        function displayPosts() {
+            const container = document.getElementById('postsDisplay');
+            
+            if (appData.posts.length === 0) {
+                container.innerHTML = `
+                    <div class="data-card" style="text-align:center;padding:40px;">
+                        <i class="fas fa-inbox" style="font-size:3rem;color:#666;margin-bottom:20px;"></i>
+                        <h3>还没有帖子</h3>
+                        <p style="color:#888;">发布第一个帖子吧！</p>
+                    </div>
+                `;
+                return;
             }
+            
+            container.innerHTML = appData.posts.map(post => `
+                <div class="data-card">
+                    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">
+                        <div style="font-weight:bold;color:#3b8526;">${post.author}</div>
+                        <div style="background:${post.platform==='java'?'#e74c3c20':'#3498db20'};color:${post.platform==='java'?'#e74c3c':'#3498db'};padding:3px 10px;border-radius:15px;font-size:0.9rem;">
+                            ${post.platform === 'java' ? 'Java版' : '基岩版'}
+                        </div>
+                    </div>
+                    <h3 style="margin-bottom:10px;">${post.title}</h3>
+                    <p style="color:#ccc;line-height:1.5;">${post.content}</p>
+                    <div style="margin-top:15px;color:#888;font-size:0.9rem;">
+                        ${formatDate(post.created_at)}
+                    </div>
+                </div>
+            `).join('');
         }
         
-        function showActivity(message, type = 'info') {
-            const feed = document.getElementById('activityFeed');
-            const icon = type === 'success' ? 'fa-check-circle' : 
-                        type === 'error' ? 'fa-times-circle' : 
-                        type === 'warning' ? 'fa-exclamation-circle' : 'fa-info-circle';
-            const color = type === 'success' ? '#3ecf8e' : 
-                         type === 'error' ? '#e74c3c' : 
-                         type === 'warning' ? '#f39c12' : '#3498db';
+        function displayServers() {
+            const container = document.getElementById('serversDisplay');
             
-            const activityItem = document.createElement('div');
-            activityItem.className = 'activity-item';
-            activityItem.innerHTML = `
-                <i class="fas ${icon}" style="color:${color};"></i>
-                <span>${new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})} - ${message}</span>
-            `;
-            
-            feed.insertBefore(activityItem, feed.firstChild);
-            
-            // 保持最多10条记录
-            if (feed.children.length > 10) {
-                feed.removeChild(feed.lastChild);
+            if (appData.servers.length === 0) {
+                container.innerHTML = `
+                    <div class="data-card" style="text-align:center;padding:40px;">
+                        <i class="fas fa-server" style="font-size:3rem;color:#666;margin-bottom:20px;"></i>
+                        <h3>还没有服务器</h3>
+                        <p style="color:#888;">添加第一个服务器吧！</p>
+                    </div>
+                `;
+                return;
             }
+            
+            container.innerHTML = appData.servers.map(server => `
+                <div class="data-card">
+                    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">
+                        <h3 style="margin:0;">${server.name}</h3>
+                        <div style="background:${server.platform==='java'?'#e74c3c20':'#3498db20'};color:${server.platform==='java'?'#e74c3c':'#3498db'};padding:3px 10px;border-radius:15px;font-size:0.9rem;">
+                            ${server.platform === 'java' ? 'Java版' : '基岩版'}
+                        </div>
+                    </div>
+                    
+                    <div style="background:rgba(0,0,0,0.3);padding:10px;border-radius:8px;margin:10px 0;font-family:monospace;">
+                        ${server.ip}
+                    </div>
+                    
+                    <p style="color:#ccc;line-height:1.5;">${server.description}</p>
+                    
+                    <div style="margin-top:15px;display:flex;justify-content:space-between;align-items:center;">
+                        <span style="color:#888;font-size:0.9rem;">${server.author}</span>
+                        <button class="btn" onclick="copyIP('${server.ip}')" style="width:auto;padding:8px 15px;font-size:0.9rem;">
+                            复制IP
+                        </button>
+                    </div>
+                </div>
+            `).join('');
         }
         
         // ============ 工具函数 ============
+        function updateConnectionStatus() {
+            const statusEl = document.getElementById('connectionStatus');
+            if (githubToken) {
+                statusEl.innerHTML = '<i class="fas fa-check-circle"></i><span>GitHub已配置，可以读写</span>';
+                statusEl.className = 'status success';
+            } else {
+                statusEl.innerHTML = '<i class="fas fa-exclamation-triangle"></i><span>需要GitHub Token才能保存</span>';
+                statusEl.className = 'status warning';
+            }
+        }
+        
         function formatDate(dateStr) {
-            const date = new Date(dateStr);
-            const now = new Date();
-            const diff = now - date;
-            
-            if (diff < 60000) return '刚刚';
-            if (diff < 3600000) return Math.floor(diff / 60000) + '分钟前';
-            if (diff < 86400000) return Math.floor(diff / 3600000) + '小时前';
-            
-            return date.toLocaleDateString('zh-CN');
+            try {
+                const date = new Date(dateStr);
+                const now = new Date();
+                const diff = now - date;
+                
+                if (diff < 60000) return '刚刚';
+                if (diff < 3600000) return Math.floor(diff / 60000) + '分钟前';
+                if (diff < 86400000) return Math.floor(diff / 3600000) + '小时前';
+                
+                return date.toLocaleDateString('zh-CN') + ' ' + date.toLocaleTimeString('zh-CN', {hour: '2-digit', minute:'2-digit'});
+            } catch (e) {
+                return '未知时间';
+            }
         }
         
         function copyIP(ip) {
             navigator.clipboard.writeText(ip).then(() => {
                 alert('✅ IP已复制到剪贴板:\n' + ip);
-                showActivity('复制了IP地址: ' + ip, 'success');
-            }).catch(() => {
-                const input = document.createElement('input');
-                input.value = ip;
-                document.body.appendChild(input);
-                input.select();
-                document.execCommand('copy');
-                document.body.removeChild(input);
-                alert('IP已复制');
             });
         }
         
-        // ============ 页面初始化 ============
+        // ============ 页面控制 ============
+        function showPostForm() {
+            document.getElementById('postForm').style.display = 'block';
+            document.getElementById('githubConfig').style.display = 'none';
+        }
+        
+        function showGitHubConfig() {
+            document.getElementById('postForm').style.display = 'none';
+            document.getElementById('githubConfig').style.display = 'block';
+        }
+        
+        function viewGistPage() {
+            window.open(`https://gist.github.com/${GIST_ID}`, '_blank');
+        }
+        
+        function saveGitHubConfig() {
+            const token = document.getElementById('githubToken').value.trim();
+            
+            if (token) {
+                githubToken = token;
+                localStorage.setItem('github_token', token);
+                updateConnectionStatus();
+                alert('✅ GitHub配置已保存！');
+            } else {
+                alert('请先输入GitHub Token');
+            }
+        }
+        
+        // ============ 初始化 ============
         window.onload = function() {
-            console.log('🚀 Minecraft社区启动中...');
-            console.log('📊 数据库:', SUPABASE_URL);
-            console.log('🔑 Key类型:', 'anon/public (正确)');
-            
-            // 测试连接
-            testConnection();
-            
-            // 加载数据
-            loadPosts();
-            loadServers();
-            
-            // 显示用户信息
-            showActivity(`欢迎 ${currentUser}`, 'success');
-            showActivity('系统初始化完成', 'info');
-            
-            // 定时刷新统计
-            setInterval(loadStats, 30000);
+            initApp();
         };
     </script>
 </body>
