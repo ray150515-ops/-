@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🎮 Minecraft社区 | Cloudflare永久存储</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root { --mc-green: #3b8526; --mc-dark: #1a2c1a; }
+        * { margin:0; padding:0; box-sizing:border-box; font-family: 'Segoe UI', sans-serif; }
+        body { background:var(--mc-dark); color:#fff; min-height:100vh; }
+        .container { max-width:1200px; margin:0 auto; padding:20px; }
+        .btn { padding:10px 20px; background:var(--mc-green); color:white; border:none; border-radius:5px; cursor:pointer; }
+        .card { background:rgba(255,255,255,0.05); border-radius:10px; padding:20px; margin:20px 0; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1><i class="fas fa-cube"></i> Minecraft永久社区</h1>
+        
+        <div class="card">
+            <h2>🚀 平台功能</h2>
+            <ul>
+                <li>✅ 永久数据存储（Cloudflare KV）</li>
+                <li>✅ 帖子发布与浏览</li>
+                <li>✅ 服务器分享</li>
+                <li>✅ 用户注册登录</li>
+                <li>✅ GitHub + Cloudflare自动部署</li>
+            </ul>
+        </div>
+
+        <div class="card">
+            <h3>📝 发布新帖子</h3>
+            <input type="text" id="postTitle" placeholder="帖子标题" style="width:100%;padding:10px;margin:10px 0;">
+            <textarea id="postContent" placeholder="帖子内容" style="width:100%;height:100px;padding:10px;margin:10px 0;"></textarea>
+            <button class="btn" onclick="createPost()">发布帖子</button>
+        </div>
+
+        <div id="posts" class="card">
+            <h3>🗣️ 最新帖子</h3>
+            <div id="postsList"></div>
+        </div>
+    </div>
+
+    <script>
+        // 配置
+        const API_URL = '/api'; // Cloudflare Worker路径
+
+        // 加载帖子
+        async function loadPosts() {
+            try {
+                const response = await fetch(`${API_URL}/posts`);
+                const posts = await response.json();
+                displayPosts(posts);
+            } catch (error) {
+                console.log('使用模拟数据');
+                displayPosts([
+                    { id:1, title:'欢迎来到Minecraft社区！', content:'这是一个永久存储的社区平台', author:'系统', date:'刚刚' }
+                ]);
+            }
+        }
+
+        // 显示帖子
+        function displayPosts(posts) {
+            const container = document.getElementById('postsList');
+            container.innerHTML = posts.map(post => `
+                <div style="border-bottom:1px solid #333;padding:10px 0;">
+                    <h4>${post.title}</h4>
+                    <p>${post.content}</p>
+                    <small>${post.author} • ${post.date}</small>
+                </div>
+            `).join('');
+        }
+
+        // 创建帖子
+        async function createPost() {
+            const title = document.getElementById('postTitle').value;
+            const content = document.getElementById('postContent').value;
+            
+            if (!title || !content) {
+                alert('请填写标题和内容');
+                return;
+            }
+
+            try {
+                const response = await fetch(`${API_URL}/posts`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ title, content, author: '玩家' })
+                });
+                
+                if (response.ok) {
+                    alert('帖子发布成功！');
+                    document.getElementById('postTitle').value = '';
+                    document.getElementById('postContent').value = '';
+                    loadPosts();
+                }
+            } catch (error) {
+                alert('帖子已保存（模拟）');
+                loadPosts();
+            }
+        }
+
+        // 初始化
+        loadPosts();
+    </script>
+</body>
+</html>

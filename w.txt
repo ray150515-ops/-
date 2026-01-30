@@ -1,0 +1,5 @@
+index.html           ← 会自动识别为HTML文件
+package.json         ← 会自动识别为JSON文件
+api.js               ← 会自动识别为JavaScript文件
+_redirects           ← 纯文本文件（无需.txt后缀）
+README.md            ← Markdown文件

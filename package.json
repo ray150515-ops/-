@@ -1,0 +1,14 @@
+{
+  "name": "minecraft-community",
+  "version": "1.0.0",
+  "description": "Minecraft玩家社区平台",
+  "main": "api.js",
+  "scripts": {
+    "dev": "npx wrangler dev",
+    "deploy": "npx wrangler deploy"
+  },
+  "dependencies": {},
+  "devDependencies": {
+    "wrangler": "^3.0.0"
+  }
+}
